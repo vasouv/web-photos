@@ -2,11 +2,14 @@ package vs.webphotos;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Objects;
+import java.util.Set;
 
 @Service
 public class MediaService {
@@ -19,15 +22,35 @@ public class MediaService {
         this.storageService = storageService;
     }
 
-    public void upload(String username, List<MultipartFile> files) {
+    public void upload(String username, List<MultipartFile> files) throws IOException {
         if (username.isBlank()) {
             throw new IllegalArgumentException("Username cannot be blank");
         }
         if (Objects.isNull(files) || files.isEmpty() || files.get(0).isEmpty()) {
             throw new IllegalArgumentException("Files cannot be empty");
         }
-        log.info("Files size: {}", files.size());
-        log.info("File name: {}", files.get(0).getOriginalFilename());
+
+        // TODO: get price plan for each user from database
+        var userPlan = PricePlan.FREE;
+
+        // check if there is any non-photo file
+        // TODO: according to plan, check for videos
+        files.forEach(f -> {
+            if (!Set.of(MediaType.IMAGE_JPEG_VALUE, MediaType.IMAGE_PNG_VALUE).contains(f.getContentType())) {
+                throw new IllegalArgumentException("Cannot upload: %s with content type: %s".formatted(f.getOriginalFilename(), f.getContentType()));
+            }
+        });
+
+        Long uploadFileSize = files.stream().map(MultipartFile::getSize).reduce(0L, Long::sum);
+
+        Long currentUsedCapacity = storageService.usedCapacity(username);
+
+        if (userPlan.hasRemainingCapacity(uploadFileSize + currentUsedCapacity)) {
+            log.info("Files can be uploaded");
+        } else {
+            log.error("Not available capacity");
+        }
+
     }
 
 }
