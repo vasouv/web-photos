@@ -32,7 +32,7 @@ public enum PricePlan {
         return capacityMB * 1_000_000L;
     }
 
-    public boolean hasRemainingCapacity(Long usedCapacity) {
+    public boolean hasAvailableCapacity(Long usedCapacity) {
         return getCapacityBytes() - usedCapacity > 0;
     }
 }

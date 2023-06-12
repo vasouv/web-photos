@@ -19,7 +19,13 @@ public class GlobalExceptionHandler extends ResponseEntityExceptionHandler {
 
     @ExceptionHandler(IllegalArgumentException.class)
     @ResponseStatus(code = HttpStatus.BAD_REQUEST)
-    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+    public ErrorResponse handleIllegalArgumentException(IllegalArgumentException ex) {
+        return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), List.of(ex.getMessage()));
+    }
+
+    @ExceptionHandler(NotEnoughCapacityException.class)
+    @ResponseStatus(code = HttpStatus.BAD_REQUEST)
+    public ErrorResponse handleNotEnoughCapacityException(NotEnoughCapacityException ex) {
         return new ErrorResponse(HttpStatus.BAD_REQUEST.value(), List.of(ex.getMessage()));
     }
 

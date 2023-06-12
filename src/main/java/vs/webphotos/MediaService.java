@@ -5,6 +5,7 @@ import org.slf4j.LoggerFactory;
 import org.springframework.http.MediaType;
 import org.springframework.stereotype.Service;
 import org.springframework.web.multipart.MultipartFile;
+import vs.webphotos.exception.NotEnoughCapacityException;
 
 import java.io.IOException;
 import java.util.List;
@@ -20,6 +21,10 @@ public class MediaService {
 
     public MediaService(StorageService storageService) {
         this.storageService = storageService;
+    }
+
+    public Long usedCapacity(String username) throws IOException {
+        return storageService.usedCapacity(username);
     }
 
     public void upload(String username, List<MultipartFile> files) throws IOException {
@@ -45,10 +50,12 @@ public class MediaService {
 
         Long currentUsedCapacity = storageService.usedCapacity(username);
 
-        if (userPlan.hasRemainingCapacity(uploadFileSize + currentUsedCapacity)) {
+        if (userPlan.hasAvailableCapacity(uploadFileSize + currentUsedCapacity)) {
             log.info("Files can be uploaded");
+            storageService.saveFiles(username, files);
         } else {
             log.error("Not available capacity");
+            throw new NotEnoughCapacityException("Not available capacity");
         }
 
     }

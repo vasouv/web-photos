@@ -1,19 +1,16 @@
 package vs.webphotos;
 
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.EnumSet;
 import java.util.List;
+import java.util.Set;
 
 @RestController
 @RequestMapping("media")
 public class MediaController {
-
-    private static final Logger log = LoggerFactory.getLogger(MediaController.class);
 
     private final MediaService mediaService;
 
@@ -22,12 +19,18 @@ public class MediaController {
     }
 
     @GetMapping("plans")
-    public EnumSet<PricePlan> plans() {
+    public Set<PricePlan> plans() {
         return EnumSet.allOf(PricePlan.class);
     }
 
+    @GetMapping("capacity/{username}")
+    public Long usedCapacity(@PathVariable String username) throws IOException {
+        return mediaService.usedCapacity(username);
+    }
+
     @PostMapping("upload")
-    public void upload(@RequestParam("username") String username, @RequestParam("files") List<MultipartFile> files) throws IOException {
+    public void upload(@RequestParam("username") String username,
+                       @RequestParam("files") List<MultipartFile> files) throws IOException {
         mediaService.upload(username, files);
     }
 
